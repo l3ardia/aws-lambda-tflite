@@ -13,7 +13,7 @@ Python: 3.9
 
 ## Creating the lambda layer
 
-The tdlite_runtime_layer.zip is already located in `cdk/layers`. It includes `requests` `Pillow`, `numpy` and `tflite_runtime` But if you need to add your own packages, you can follow the steps:
+The `tflite_runtime_layer.zip` is already located in `cdk/layers`. It includes `requests` `Pillow`, `numpy` and `tflite_runtime` But if you need to add your own packages, you can follow the steps:
 
 ```
 cd scripts/lambda-layer-creator
