@@ -1,0 +1,4 @@
+requests
+https://files.pythonhosted.org/packages/89/ac/53100546dcd9aa400a73c7770b13cad9a3b18bf83433499e36b5efe9850f/numpy-1.26.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+https://files.pythonhosted.org/packages/f6/46/0bd0ca03d9d1164a7fa33d285ef6d1c438e963d0c8770e4c5b3737ef5abe/pillow-11.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+https://files.pythonhosted.org/packages/7e/3e/aba8bf6ab0874e5afa997239c9ce245dd5db4ddeb9992d08bd2769cee15e/tflite_runtime-2.7.0-cp39-cp39-manylinux2014_x86_64.whl
