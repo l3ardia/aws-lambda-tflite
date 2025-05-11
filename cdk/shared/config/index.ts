@@ -31,15 +31,10 @@ export const getConfig = (scope: Construct) => {
       default: '',
       env: 'HOSTNAME'
     },
-    MODERATION_API_HOSTNAME: {
+    TFLITE_MODEL_NAME: {
       format: String,
       default: '',
-      env: 'MODERATION_API_HOSTNAME'
-    },
-    OPENAI_API_KEY: {
-      format: String,
-      default: '',
-      env: 'OPENAI_API_KEY'      
+      env: 'TFLITE_MODEL_NAME'      
     },
     SYSTEM_CERTIFICATE_ARN: {
       format: String,

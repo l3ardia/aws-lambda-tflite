@@ -8,7 +8,7 @@ import path = require('path');
 dotenv.config({ path: path.resolve(`.env.${process.env.ENV}`) });
 
 const envName = process.env.ENV as string;
-const APP_NAME = `aws-labda-tflite-${envName}`;
+const APP_NAME = `aws-lambda-tflite-${envName}`;
 
 const app = new cdk.App();
 
@@ -24,6 +24,6 @@ new ApiStack(app, `${APP_NAME}-ApiStack`, {
   hostName: process.env.API_HOSTNAME || "",
   timeout: cdk.Duration.seconds(20),
   getEnvironment: (config) => ({
-    OPENAI_API_KEY: config.OPENAI_API_KEY,
+    MODEL_KEY: config.TFLITE_MODEL_NAME,
   }),
 });

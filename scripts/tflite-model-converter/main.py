@@ -1,7 +1,7 @@
 import tensorflow as tf # type: ignore
 
-# Load the H5 model
-model_path = "./model.h5"
+# Load the keras model
+model_path = "./model.keras"
 model = tf.keras.models.load_model(model_path)
 
 # Convert the model to TFLite format

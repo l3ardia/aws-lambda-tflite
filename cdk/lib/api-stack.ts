@@ -1,18 +1,16 @@
-import {Duration, Stack, StackProps} from 'aws-cdk-lib';
+import { Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import {
-  ContentHandling,
-  LambdaIntegration,
-  PassthroughBehavior,
-  RestApi,
+  LambdaIntegration, RestApi,
   SecurityPolicy
 } from 'aws-cdk-lib/aws-apigateway';
-import {Certificate} from 'aws-cdk-lib/aws-certificatemanager';
-import {Alarm, ComparisonOperator} from 'aws-cdk-lib/aws-cloudwatch';
-import {Code, Function, Runtime} from 'aws-cdk-lib/aws-lambda';
-import {PublicHostedZone} from 'aws-cdk-lib/aws-route53';
-import {Construct} from 'constructs';
-import {Config, getConfig} from '../shared/config';
-import {envName} from '../shared/utils';
+import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
+import { Code, Function, LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Construct } from 'constructs';
+import { Config, getConfig } from '../shared/config';
+import { envName } from '../shared/utils';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import * as path from 'path';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 export interface ApiStackProps extends StackProps {
   appName: string;
@@ -36,33 +34,53 @@ export class ApiStack extends Stack {
 
     const environment = props.getEnvironment
       ? props.getEnvironment(config)
-      : {};    
+      : {};  
+      
+    // Create an S3 bucket to store the Keras model
+    const modelBucket = new Bucket(this, `${props.appName}-tflite-bucket`, {
+      bucketName: `${props.appName}-tflite-model`,
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+    
+    // Define a Lambda Layer for TensorFlow & Numpy
+    const tfliteLayer = new LayerVersion(this, `${props.appName}-tflite-lambda-layer`, {
+      code: Code.fromAsset(path.join(__dirname, '../layers/tflite_runtime_layer.zip')),
+      compatibleRuntimes: [Runtime.PYTHON_3_9],
+      description: 'Contains numpy, tensorflow, pillow and requests for ML inference',
+    }); 
 
+    // Define the Lambda function
+    const handler = new Function(this, `${props.appName}-tflite-lambda`, {
+      runtime: Runtime.PYTHON_3_9,
+      handler: 'index.lambda_handler',
+      code: Code.fromAsset(path.join(__dirname, '../../services/api')), // Path to Lambda function
+      timeout: Duration.seconds(60),
+      memorySize: 512,
+      environment: {
+        TZ: 'Australia/Sydney',
+        ENV: envName,
+        S3_BUCKET: modelBucket.bucketName,
+        ...(environment || {}),
+      },      
+      layers: [tfliteLayer],
+    });
+
+    // Grant Lambda permissions to read the model from S3
+    modelBucket.grantRead(handler);
+    
+    // Grant necessary permissions
+    handler.addToRolePolicy(
+      new PolicyStatement({
+        actions: ['s3:GetObject'],
+        resources: [`${modelBucket.bucketArn}/*`],
+      }),
+    );    
+    
     const certificate = Certificate.fromCertificateArn(
       this,
       `${props.appName}-certificate`,
       config.SYSTEM_CERTIFICATE_ARN,
     );
-
-    const hostedZone = PublicHostedZone.fromHostedZoneAttributes(this, `${props.appName}-hosted-zone`, {
-      hostedZoneId: config.HOSTED_ZONE_ID,
-      zoneName: config.HOSTED_ZONE_NAME,
-    });
-
-    const handler = new Function(this, `${props.appName}-lambda`, {
-      functionName: `${props.appName}-lambda`,
-      handler: 'app-lambda.handler',
-      runtime: Runtime.NODEJS_LATEST,
-      code: Code.fromAsset(props.distDir),
-      //logRetention: config.LOG_RETENTION,
-      timeout: props.timeout || Duration.seconds(10),
-      memorySize: 1024,
-      environment: {
-        TZ: 'Australia/Sydney',
-        ENV: envName,
-        ...(environment || {}),
-      },
-    });
 
     const api = new RestApi(this, `${props.appName}-gateway`, {
       domainName: {
@@ -71,17 +89,11 @@ export class ApiStack extends Stack {
         securityPolicy: SecurityPolicy.TLS_1_2,
       },
       restApiName: props.appName,
-      /*deployOptions: {
-        loggingLevel: MethodLoggingLevel.INFO,
-        dataTraceEnabled: true,
-      },*/
       binaryMediaTypes: ["*/*"]
     });
 
     const integration = new LambdaIntegration(handler, {
       requestTemplates: { 'application/json': '{ "statusCode": "200" }' },
-      contentHandling: ContentHandling.CONVERT_TO_BINARY,
-      passthroughBehavior: PassthroughBehavior.WHEN_NO_MATCH
     });
 
     api.root.addProxy({
@@ -89,14 +101,9 @@ export class ApiStack extends Stack {
       anyMethod: true,
     });
 
-    new Alarm(this, `${props.appName}-LambdaErrorsAlarm`, {
-      metric: handler.metricErrors({ period: Duration.minutes(1) }),
-      threshold: 1,
-      comparisonOperator: ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-      evaluationPeriods: 1,
-      alarmDescription:
-        'Alarm if the SUM of Errors is greater than or equal to the threshold (1) for 1 evaluation period',
-    });
+    // Create an API endpoint: POST /classify
+    const classifyResource = api.root.addResource('classify');
+    classifyResource.addMethod('POST', new LambdaIntegration(handler));
 
     this.api = api;
     this.config = config;

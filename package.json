@@ -1,0 +1,17 @@
+{
+  "name": "awd-lambda-tflite",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "pnpm --parallel -r build",
+    "dev": "pnpm --parallel -r dev",
+    "test": "pnpm --parallel -r test",
+    "deploy": "cd cdk && ENV=dev npx cdk deploy --profile default --all"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "constructs": "^10.3.0"
+  }
+}
