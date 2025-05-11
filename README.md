@@ -41,8 +41,8 @@ in `cdk` folder make a copy from `.env.sample` and rename it to `.env`
 Then run 
 
 ```
-cdk synth
-cdk deploy --all
+ENV=dev cdk synth
+ENV=dev cdk deploy --all
 ```
 
 After being deployed, goto hosted zones and assign an A-Record to API Gateway
