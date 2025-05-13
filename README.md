@@ -66,3 +66,5 @@ curl --location 'https://tflite.example.com/classify' \
     ]
 }'
 ```
+
+<img width="1039" alt="image" src="https://github.com/user-attachments/assets/a307798b-6a6d-4b9a-92c2-f7a78865b194" />
