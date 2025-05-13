@@ -23,8 +23,17 @@ download_model()
 
 def lambda_handler(event, context):
     try:
+        
+        body = event.get("body", "")
+        if not body:
+            raise ValueError("Empty request body")
+
+        if event.get("isBase64Encoded"):
+            import base64
+            body = base64.b64decode(body).decode("utf-8")
+                    
         # Parse the URL from the event
-        input_data = json.loads(event["body"])
+        input_data = json.loads(body)
         image_urls = input_data.get("image_urls", []) 
         
         # Load TFLite model

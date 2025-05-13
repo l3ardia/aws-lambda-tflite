@@ -79,7 +79,7 @@ export class ApiStack extends Stack {
     const certificate = Certificate.fromCertificateArn(
       this,
       `${props.appName}-certificate`,
-      config.SYSTEM_CERTIFICATE_ARN,
+      config.CERTIFICATE_ARN,
     );
 
     const api = new RestApi(this, `${props.appName}-gateway`, {

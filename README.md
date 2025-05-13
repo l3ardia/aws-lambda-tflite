@@ -36,16 +36,17 @@ You can find the converter script inside `scripts/tflite-model-converter` folder
 
 ## Deploy CDK
 
-in `cdk` folder make a copy from `.env.sample` and rename it to `.env`
+in `cdk` folder make a copy from `.env.sample` and rename it to `.env.dev`
 
-Then run 
+Fill required information, then run 
 
 ```
 ENV=dev cdk synth
 ENV=dev cdk deploy --all
 ```
 
-After being deployed, goto hosted zones and assign an A-Record to API Gateway
+> After deployed, goto hosted zones and assign an A-Record to API Gateway
+> In AWS navigate to S3, find the bucket and upload `model.tflite`
 
 ## Upload your model
 The `.tflite` model needs to be uploaded in S3 bucket
@@ -54,3 +55,14 @@ You can do this manually using `aws-cli` or AWS Console.
 ## Test the result
 
 POST `/classify` and add `image_urls` as array of string to body of request
+
+```
+curl --location 'https://tflite.example.com/classify' \
+--header 'Content-Type: application/json' \
+--data '{
+    "image_urls": [
+        "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png", 
+        "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg"
+    ]
+}'
+```

@@ -18,7 +18,7 @@ import path = require("path");
  */
 export const getConfig = (scope: Construct) => {
 
-  dotenv.config({ path: path.resolve(`.env.${process.env.ENV}`) });
+  dotenv.config({ path: path.resolve(`.env.${process.env.ENV}`) });  
 
   const schema = convict({
     ENV: {
@@ -26,33 +26,16 @@ export const getConfig = (scope: Construct) => {
       default: "",
       env: "ENV",
     },
-    HOSTNAME: {
-      format: String,
-      default: '',
-      env: 'HOSTNAME'
-    },
     TFLITE_MODEL_NAME: {
       format: String,
       default: '',
       env: 'TFLITE_MODEL_NAME'      
     },
-    SYSTEM_CERTIFICATE_ARN: {
+    CERTIFICATE_ARN: {
       format: String,
       default: '',
-    },    
-    GLOBAL_SYSTEM_CERTIFICATE_ARN: {
-      format: String,
-      default: '',
-    },
-    HOSTED_ZONE_ID: {
-      format: String,
-      default: '',
-    },
-    HOSTED_ZONE_NAME: {
-      format: String,
-      default: '',
-      env: 'HOSTED_ZONE_NAME'
-    },    
+      env: 'CERTIFICATE_ARN'
+    },     
   });
 
   const env = schema.get("ENV");
@@ -64,6 +47,7 @@ export const getConfig = (scope: Construct) => {
 
   // Load the config based on the environment
   const config = environments[env.replace('-', '_') as keyof typeof environments](scope);
+    
   Object.keys(config).forEach((key) => {
     schema.set(key, config[key as keyof typeof config]);
   });

@@ -21,9 +21,9 @@ new ApiStack(app, `${APP_NAME}-ApiStack`, {
   env,
   appName: `${APP_NAME}-tflite-api`,
   distDir: '../services/tflite-api/dist',
-  hostName: process.env.API_HOSTNAME || "",
+  hostName: process.env.HOSTNAME || "",
   timeout: cdk.Duration.seconds(20),
   getEnvironment: (config) => ({
-    MODEL_KEY: config.TFLITE_MODEL_NAME,
+    MODEL: config.TFLITE_MODEL_NAME,
   }),
 });
