@@ -1,4 +1,4 @@
-# AWS Lambda Tensowflow (tflite)
+# AWS Lambda Tensorflow (tflite)
 An example of running tensorflow models using tflite_runtime on AWS Lambda functions
 
 This project creates a Lambda layer and integrates it with a Lambda function to enable the execution of TensorFlow 2.7 models.
